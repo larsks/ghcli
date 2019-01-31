@@ -8,22 +8,30 @@ import requests
 api_url = 'https://api.github.com'
 
 LOG = logging.getLogger(__name__)
+CONTEXT_SETTINGS = {
+    'auto_envvar_prefix': 'GITHUB',
+}
 
 
-@click.group()
+@click.group(context_settings=CONTEXT_SETTINGS)
 @click.option('--debug', 'loglevel', flag_value='DEBUG')
 @click.option('--verbose', 'loglevel', flag_value='INFO')
 @click.option('--quiet', 'loglevel', flag_value='WARNING', default=True)
-@click.option('--credentials', '-c', 'creds', type=click.File(mode='r'))
+@click.option('--token-file', '-t', type=click.File(mode='r'))
+@click.option('--token', '-T')
 @click.pass_context
-def github(ctx, loglevel, creds):
+def github(ctx, loglevel, token_file, token):
     logging.basicConfig(level=loglevel)
     ctx.obj = requests.Session()
 
-    if creds:
-        _creds = json.load(creds)
-        if 'token' in _creds:
-            ctx.obj.headers['Authorization'] = 'token {token}'.format(**_creds)
+    if token:
+        _token = token
+    elif token_file:
+        data = json.load(token_file)
+        _token = data.get('token')
+
+    if _token:
+        ctx.obj.headers['Authorization'] = 'token {token}'.format(token=_token)
 
 
 @github.group()
