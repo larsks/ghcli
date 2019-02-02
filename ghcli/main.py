@@ -29,6 +29,8 @@ def github(ctx, loglevel, token_file, token):
     elif token_file:
         data = json.load(token_file)
         _token = data.get('token')
+    else:
+        _token = None
 
     if _token:
         ctx.obj.headers['Authorization'] = 'token {token}'.format(token=_token)
